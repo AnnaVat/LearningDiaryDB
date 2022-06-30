@@ -4,7 +4,7 @@ using System.Linq;
 using System.IO;
 using LearningDiary_DB_test.Models;
 using ClassLibraryJA;
-
+using System.Globalization;
 
 namespace Oppimispaivakirja
 
@@ -84,7 +84,6 @@ namespace Oppimispaivakirja
                     Topic.Description = ReadStringMethod();
 
 
-
                     Console.WriteLine("Enter the studying source:");
                     Topic.Source = ReadStringMethod();
 
@@ -110,8 +109,6 @@ namespace Oppimispaivakirja
                     Console.WriteLine("Studying of this topic is still in progress: " + result2); //Returns "True" if still in progress. returns "False" if completed (not in progress anymore).
 
                     //Topic.InProgress = ReadBoolMethod(Topic.CompletionDate); //This is not asked from user, but start/finnish day compared.
-
-
 
 
                     bool result = Aikataulu.ReadBoolMethod((DateTime)Topic.CompletionDate, (DateTime)Topic.StartLearningDate);
@@ -205,7 +202,7 @@ namespace Oppimispaivakirja
                     catch (Exception)
                     {
 
-                        Console.WriteLine("Should be number. In case on decimals use \",\" as a divider");
+                        Console.WriteLine("Should be number. In case of decimals use \",\" as a divider.");
                         continue;
                     }
                     break;
@@ -213,13 +210,12 @@ namespace Oppimispaivakirja
                 }
 
                 return input;
-                      
-               
+
             }
 
             static DateTime ReadDateTimeMethod()
             {
-                DateTime inputDateTime;
+                /*DateTime inputDateTime;
 
                 while (true)
                 {
@@ -240,9 +236,42 @@ namespace Oppimispaivakirja
 
                 }
 
-                return inputDateTime;
-                
+                return inputDateTime;*/
+
+
+                //DateTime dDate;
+
+
+                var inputString = Console.ReadLine();
+                string[] formats = { "dd/MM/yyyy" };
+                DateTime parsedDate;
+                bool isValidFormat = DateTime.TryParseExact(Console.ReadLine(), formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsedDate);
+
+                try
+                {
+
+                    while (isValidFormat == false)
+                    {
+
+                        Console.WriteLine("Should be in dd/MM/yyyy format.");
+                        isValidFormat = DateTime.TryParseExact(Console.ReadLine(), formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsedDate);
+
+                        //string.Format("{0:d/MM/yyyy}", parsedDate);
+                       
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+
+                    Console.WriteLine(e.ToString());
+                    
+                }
+                return parsedDate;
+            }
                
+
             }
 
             /*static bool ReadBoolMethod(DateTime? CompletionDate)
@@ -308,7 +337,6 @@ namespace Oppimispaivakirja
 
     }
 
-}
 
 
 
