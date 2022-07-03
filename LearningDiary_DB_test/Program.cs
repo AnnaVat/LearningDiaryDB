@@ -5,6 +5,7 @@ using System.IO;
 using LearningDiary_DB_test.Models;
 using ClassLibraryJA;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Oppimispaivakirja
 
@@ -120,8 +121,11 @@ namespace Oppimispaivakirja
                     Console.WriteLine("yes - Add new studying topic, no - quit programm.");
                     status = Console.ReadLine();
 
-                    testiYhteys.Topics.Add(Topic);
-                    testiYhteys.SaveChanges();
+              
+                    RunAsync(testiYhteys, Topic).GetAwaiter().GetResult();
+
+                    //testiYhteys.Topics.Add(Topic);
+                    //testiYhteys.SaveChanges();
 
                 }
 
@@ -242,10 +246,10 @@ namespace Oppimispaivakirja
                 //DateTime dDate;
 
 
-                var inputString = Console.ReadLine();
+
                 string[] formats = { "dd/MM/yyyy" };
-                DateTime parsedDate;
-                bool isValidFormat = DateTime.TryParseExact(Console.ReadLine(), formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsedDate);
+                DateTime parsedDate = DateTime.Now;
+                bool isValidFormat = false;
 
                 try
                 {
@@ -253,8 +257,8 @@ namespace Oppimispaivakirja
                     while (isValidFormat == false)
                     {
 
-                        Console.WriteLine("Should be in dd/MM/yyyy format.");
                         isValidFormat = DateTime.TryParseExact(Console.ReadLine(), formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsedDate);
+                        if (!isValidFormat) Console.WriteLine("Should be in dd/MM/yyyy format.");
 
                         //string.Format("{0:d/MM/yyyy}", parsedDate);
                        
@@ -290,6 +294,14 @@ namespace Oppimispaivakirja
                 return availableHours;
 
             }
+
+            public static async Task<Task> RunAsync(LearningDiaryContext testiYhteys, Topic Topic)
+        {
+            testiYhteys.Topics.Add(Topic);
+            await testiYhteys.SaveChangesAsync();
+            return null;
+        }
+
 
         }
     }
