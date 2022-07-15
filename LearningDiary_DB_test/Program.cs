@@ -70,63 +70,76 @@ namespace Oppimispaivakirja
             using (LearningDiaryContext testiYhteys = new LearningDiaryContext())
 
             {
-                var taulu = testiYhteys.Topics.Select(topikki => topikki);
-
-                while (status == "yes") //Asking user for parameters.
-
+                try
                 {
-
-                    Topic Topic = new Topic();
-
-                    Console.WriteLine("Enter the topic title:");
-                    Topic.Title = ReadStringMethod();
-
-                    Console.WriteLine("Enter a short description:");
-                    Topic.Description = ReadStringMethod();
+                    var taulu = testiYhteys.Topics.Select(topikki => topikki);
 
 
-                    Console.WriteLine("Enter the studying source:");
-                    Topic.Source = ReadStringMethod();
+                    while (status == "yes") //Asking user for parameters.
 
-                    Console.WriteLine("Enter starting learning date:");
-                    Topic.StartLearningDate = ReadDateTimeMethod();
+                    {
 
-                    Console.WriteLine("When is the completion date?");
-                    Topic.CompletionDate = ReadDateTimeMethod();
+                        Topic Topic = new Topic();
 
-                    
-                    Topic.TimeToMaster = AvailableTime((DateTime)Topic.CompletionDate, (DateTime)Topic.StartLearningDate);
-                    Console.WriteLine("Enter estimated time to master the topic in hours:" + Topic.TimeToMaster);
+                        Console.WriteLine("Enter the topic title:");
+                        Topic.Title = ReadStringMethod();
 
-
-                    Console.WriteLine("Time spent in hours:");
-                    Topic.TimeSpent = ReadDoubleMethod();
+                        Console.WriteLine("Enter a short description:");
+                        Topic.Description = ReadStringMethod();
 
 
-                    DateTime dt = Convert.ToDateTime(Topic.CompletionDate);
+                        Console.WriteLine("Enter the studying source:");
+                        Topic.Source = ReadStringMethod();
 
-                    bool result2 = Aikataulu.ReadBoolMethod2(dt);
+                        Console.WriteLine("Enter starting learning date:");
+                        Topic.StartLearningDate = ReadDateTimeMethod();
 
-                    Console.WriteLine("Studying of this topic is still in progress: " + result2); //Returns "True" if still in progress. returns "False" if completed (not in progress anymore).
-
-                    //Topic.InProgress = ReadBoolMethod(Topic.CompletionDate); //This is not asked from user, but start/finnish day compared.
-
-
-                    bool result = Aikataulu.ReadBoolMethod((DateTime)Topic.CompletionDate, (DateTime)Topic.StartLearningDate);
-
-                    Console.WriteLine("You have enough time to study: " + result); //Returns "False" if time is not enoufg. Returns "True" if time is still enough.
+                        Console.WriteLine("When is the completion date?");
+                        Topic.CompletionDate = ReadDateTimeMethod();
 
 
+                        Topic.TimeToMaster = AvailableTime((DateTime)Topic.CompletionDate,
+                            (DateTime)Topic.StartLearningDate);
+                        Console.WriteLine("Enter estimated time to master the topic in hours:" + Topic.TimeToMaster);
 
-                    Console.WriteLine("yes - Add new studying topic, no - quit programm.");
-                    status = Console.ReadLine();
 
-              
-                    RunAsync(testiYhteys, Topic).GetAwaiter().GetResult();
+                        Console.WriteLine("Time spent in hours:");
+                        Topic.TimeSpent = ReadDoubleMethod();
 
-                    //testiYhteys.Topics.Add(Topic);
-                    //testiYhteys.SaveChanges();
 
+                        DateTime dt = Convert.ToDateTime(Topic.CompletionDate);
+
+                        bool result2 = Aikataulu.ReadBoolMethod2(dt);
+
+                        Console.WriteLine("Studying of this topic is still in progress: " +
+                                          result2); //Returns "True" if still in progress. returns "False" if completed (not in progress anymore).
+
+                        //Topic.InProgress = ReadBoolMethod(Topic.CompletionDate); //This is not asked from user, but start/finnish day compared.
+
+
+                        bool result = Aikataulu.ReadBoolMethod((DateTime)Topic.CompletionDate,
+                            (DateTime)Topic.StartLearningDate);
+
+                        Console.WriteLine("You have enough time to study: " +
+                                          result); //Returns "False" if time is not enoufg. Returns "True" if time is still enough.
+
+
+
+                        Console.WriteLine("yes - Add new studying topic, no - quit programm.");
+                        status = Console.ReadLine();
+
+
+                        RunAsync(testiYhteys, Topic).GetAwaiter().GetResult();
+
+                        //testiYhteys.Topics.Add(Topic);
+                        //testiYhteys.SaveChanges();
+
+                    }
+                }
+
+                catch (ArgumentOutOfRangeException argumentOutOfRangeException)
+                {
+                    Console.WriteLine($"Error: {argumentOutOfRangeException.Message}");
                 }
 
                 foreach (var aihe in test) //User's answers written to the console.
@@ -219,49 +232,41 @@ namespace Oppimispaivakirja
 
             static DateTime ReadDateTimeMethod()
             {
-                /*DateTime inputDateTime;
-
-                while (true)
-                {
-                    try
-                    {
-                        inputDateTime = DateTime.Parse(Console.ReadLine());
-
-                        //return DateTime.Parse(Console.ReadLine());
-                    }
-
-                    catch (Exception)
-                    {
-
-                        Console.WriteLine("Should be in dd/MM/yyyy format.");
-                        continue;
-                    }
-                    break;
-
-                }
-
-                return inputDateTime;*/
-
-
-                //DateTime dDate;
 
 
 
                 string[] formats = { "dd/MM/yyyy" };
                 DateTime parsedDate = DateTime.Now;
                 bool isValidFormat = false;
+                string unParsedDate = "";
+                DateTime earliestDate = DateTime.ParseExact("01/01/2000", formats, CultureInfo.InvariantCulture);
 
                 try
                 {
 
                     while (isValidFormat == false)
                     {
+                        unParsedDate = Console.ReadLine();
+                        isValidFormat = DateTime.TryParseExact(unParsedDate, formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsedDate);
+                        if (isValidFormat)
+                        {
+                            parsedDate = DateTime.ParseExact(unParsedDate, formats, CultureInfo.InvariantCulture);
+                            if (parsedDate < earliestDate)
+                            {
+                                isValidFormat = false;
+                                Console.WriteLine($"Date can't be earlier than: {earliestDate}.");
+                                //  throw new ArgumentOutOfRangeException(nameof(parsedDate), $"Date can't be earlier than: {earliestDate}.");
+                            }
+                        }
 
-                        isValidFormat = DateTime.TryParseExact(Console.ReadLine(), formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out parsedDate);
-                        if (!isValidFormat) Console.WriteLine("Should be in dd/MM/yyyy format.");
+                        else
+                        {
 
-                        //string.Format("{0:d/MM/yyyy}", parsedDate);
-                       
+                            Console.WriteLine("Should be in dd/MM/yyyy format.");
+
+                        }
+
+
                     }
 
                 }
@@ -307,47 +312,7 @@ namespace Oppimispaivakirja
     }
 
 
-    public class test
 
-    {
-
-        public test()
-        {
-
-        }
-
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-
-        public double EstimatedTimeToMaster { get; set; }
-       
-        public double TimeSpent { get; set; }
-        public string Source { get; set; }
-        public DateTime StartLearningDate { get; set; }
-        public bool InProgress { get; set; }
-        public DateTime CompletionDate { get; set; }
-
-
-        public override string ToString()
-        {
-            string Result = "";
-            String Separator = ",";
-            Result += Id + Separator;
-            Result += Title + Separator;
-            Result += Description + Separator;
-            Result += +EstimatedTimeToMaster + Separator;
-            Result += TimeSpent + Separator;
-            Result += Source + Separator;
-            Result += StartLearningDate + Separator;
-            Result += InProgress + Separator;
-            Result += CompletionDate;
-
-            return Result;
-
-        }
-
-    }
 
 
 
